@@ -1,0 +1,31 @@
+# Expo
+.expo/
+dist/
+web-build/
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment Variables
+.env
+.env.local
+*.env
+!env.example
+
+# OS
+.DS_Store
+
+# Build Inputs
+ios/
+android/
+
+# Misc
+.idea/
+.vscode/
+coverage/
+scripts/mag7_simulation_results.json
+scripts/*.sh
+!scripts/market_data_test.sh
+!scripts/ibkr_test.sh
+!scripts/ibkr_deep_test.sh
