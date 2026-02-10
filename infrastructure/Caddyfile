@@ -1,4 +1,4 @@
-{$CADDY_HOST:localhost} {
+http://{$CADDY_HOST:localhost} {
     reverse_proxy bridge-api:5050 {
         transport http {
             dial_timeout 15s

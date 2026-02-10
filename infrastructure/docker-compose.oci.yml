@@ -8,6 +8,8 @@ services:
       POSTGRES_DB: ${DB_NAME:-wheel_strat_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     restart: unless-stopped
     networks:
       - ibkr-net
@@ -38,7 +40,7 @@ services:
       - BYPASS_WARNING=yes
       - TWOFA_TIMEOUT_ACTION=restart
       - SAVE_TWS_SETTINGS=yes
-      - EXISTING_SESSION_DETECTED_ACTION=secondary
+      - EXISTING_SESSION_DETECTED_ACTION=overtake
     ports:
       - "${IB_GATEWAY_API_PORT:-4004}:4004"
     volumes:
