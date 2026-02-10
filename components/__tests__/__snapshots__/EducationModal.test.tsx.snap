@@ -1,0 +1,241 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EducationModal renders correctly when visible 1`] = `
+<Modal
+  animationType="slide"
+  onRequestClose={[Function]}
+  transparent={true}
+  visible={true}
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "justifyContent": "center",
+        "padding": 24,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "backgroundColor": "transparent",
+          },
+          {
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
+          },
+        ]
+      }
+    >
+      <ViewManagerAdapter_ExpoBlurView
+        blurReductionFactor={4}
+        experimentalBlurMethod="none"
+        intensity={60}
+        style={
+          {
+            "bottom": 0,
+            "left": 0,
+            "position": "absolute",
+            "right": 0,
+            "top": 0,
+          }
+        }
+        tint="dark"
+      />
+    </View>
+    <View
+      glassEffectStyle="regular"
+      isInteractive={true}
+      style={
+        [
+          {
+            "backgroundColor": "rgba(255, 255, 255, 0.05)",
+            "borderColor": "rgba(255, 255, 255, 0.12)",
+            "borderRadius": 24,
+            "borderWidth": 1,
+            "overflow": "hidden",
+          },
+          null,
+          {
+            "borderRadius": 32,
+            "maxHeight": "85%",
+            "overflow": "hidden",
+            "width": "100%",
+          },
+        ]
+      }
+      tintColor="rgba(255, 255, 255, 0.08)"
+    >
+      <View
+        pointerEvents="none"
+        style={
+          [
+            {
+              "backgroundColor": "transparent",
+            },
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            },
+          ]
+        }
+      >
+        <ViewManagerAdapter_ExpoBlurView
+          blurReductionFactor={4}
+          experimentalBlurMethod="none"
+          intensity={30}
+          style={
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            }
+          }
+          tint="dark"
+        />
+      </View>
+      <View
+        style={
+          [
+            {
+              "padding": 24,
+            },
+            {
+              "padding": 0,
+              "width": "100%",
+            },
+          ]
+        }
+      >
+        <RCTScrollView
+          contentContainerStyle={
+            {
+              "alignItems": "center",
+              "padding": 32,
+            }
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "marginBottom": 32,
+                }
+              }
+            >
+              <Image
+                resizeMode="contain"
+                source={
+                  {
+                    "testUri": "../../../assets/images/icon.png",
+                  }
+                }
+                style={
+                  {
+                    "borderRadius": 16,
+                    "height": 96,
+                    "marginBottom": 16,
+                    "width": 96,
+                  }
+                }
+              />
+              <Text
+                style={
+                  {
+                    "color": "#FFFFFF",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "textAlign": "center",
+                  }
+                }
+              >
+                Wheel Strat
+              </Text>
+            </View>
+            <View
+              style={
+                {
+                  "marginVertical": 16,
+                  "width": "100%",
+                }
+              }
+            >
+              <IntroCarousel
+                parentWidth={638}
+              />
+            </View>
+            <View
+              accessibilityState={
+                {
+                  "busy": undefined,
+                  "checked": undefined,
+                  "disabled": undefined,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "alignItems": "center",
+                  "backgroundColor": "#CE93D8",
+                  "borderRadius": 16,
+                  "marginTop": 24,
+                  "paddingHorizontal": 32,
+                  "paddingVertical": 16,
+                  "width": "100%",
+                }
+              }
+              testID="dismiss-onboarding"
+            >
+              <Text
+                style={
+                  {
+                    "color": "#FFFFFF",
+                    "fontSize": 18,
+                    "fontWeight": "bold",
+                  }
+                }
+              >
+                Let's Wheel 🛞
+              </Text>
+            </View>
+          </View>
+        </RCTScrollView>
+      </View>
+    </View>
+  </View>
+</Modal>
+`;

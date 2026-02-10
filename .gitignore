@@ -4,28 +4,81 @@ dist/
 web-build/
 
 # Dependencies
-node_modules/
+**/node_modules/
 package-lock.json
+yarn-error.log
+functions/lib/
+
+# Firebase & GCP
+.firebase/
+.gcloud/
+*-debug.log
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
 
 # Environment Variables
-.env
-.env.local
-*.env
-!env.example
+.env*
+!.env.example
+functions/.env*
+!functions/.env.example
+infrastructure/.env*
+config/firebase/*-adminsdk-*.json
+config/firebase/*.plist
+
+# IDE / AI agent configs
+.vscode/
+.kiro/
+AGENTS.md
+CLAUDE.md
 
 # OS
 .DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
 
 # Build Inputs
 ios/
 android/
+packages/shared/dist/
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache/
+venv/
+.venv/
+env/
+*.db
+*.sqlite
 
 # Misc
-.idea/
-.vscode/
 coverage/
-scripts/mag7_simulation_results.json
-scripts/*.sh
-!scripts/market_data_test.sh
-!scripts/ibkr_test.sh
-!scripts/ibkr_deep_test.sh
+*.log
+logs.txt
+*.tgz
+*.tar.gz
+*.zip
+mag7_simulation_results.json
+
+# Scripts
+scripts/**/*.sh
+!scripts/diagnostics/market_data_test.sh
+!scripts/diagnostics/ibkr_deep_test.sh
+
+# @generated expo-cli
+expo-env.d.ts
+
+# Detox
+artifacts/
+detox_*.txt
+*output*.txt
+
+# Yarn
+.yarn/install-state.gz
+.pnp.*
+
+docs/archive/

@@ -1,0 +1,27 @@
+export type CommunityPosition = {
+    id: string;
+    symbol?: string;
+    quantity?: number;
+    averageCost?: number;
+    currentPrice?: number;
+    closePrice?: number;
+    costBasis?: number;
+    marketValue?: number;
+    dailyPnl?: number;
+    dailyPnlPct?: number;
+    ivRank?: number;
+    rsi?: number;
+    beta?: number;
+    delta?: number;
+    theta?: number;
+    gamma?: number;
+    vega?: number;
+    companyName?: string;
+    secType?: string;
+    right?: string;
+    strike?: number;
+    expiration?: string;
+    multiplier?: number;
+    localSymbol?: string;
+    conId?: number;
+};

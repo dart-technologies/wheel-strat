@@ -1,0 +1,59 @@
+{
+    "cli": {
+        "version": ">= 5.8.0",
+        "appVersionSource": "remote"
+    },
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "channel": "development",
+            "node": "22.13.1",
+            "env": {
+                "NODE_ENV": "development",
+                "APP_VARIANT": "development",
+                "EXPO_BUNDLE_IDENTIFIER": "art.dart.wheelstrat",
+                "EXPO_ANDROID_PACKAGE": "art.dart.wheelstrat"
+            }
+        },
+        "development-simulator": {
+            "extends": "development",
+            "ios": {
+                "simulator": true
+            }
+        },
+        "preview": {
+            "distribution": "internal",
+            "channel": "preview",
+            "node": "22.13.1",
+            "env": {
+                "NODE_ENV": "production",
+                "APP_VARIANT": "preview",
+                "EXPO_BUNDLE_IDENTIFIER": "art.dart.wheelstrat",
+                "EXPO_ANDROID_PACKAGE": "art.dart.wheelstrat"
+            }
+        },
+        "production": {
+            "distribution": "store",
+            "autoIncrement": true,
+            "channel": "production",
+            "node": "22.13.1",
+            "env": {
+                "NODE_ENV": "production",
+                "APP_VARIANT": "production",
+                "EXPO_BUNDLE_IDENTIFIER": "art.dart.wheelstrat",
+                "EXPO_ANDROID_PACKAGE": "art.dart.wheelstrat"
+            }
+        },
+        "e2e": {
+            "channel": "e2e",
+            "developmentClient": true,
+            "ios": {
+                "simulator": true
+            },
+            "env": {
+                "DETOX_TESTING": "true"
+            }
+        }
+    }
+}

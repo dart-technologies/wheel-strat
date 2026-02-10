@@ -1,0 +1,132 @@
+services:
+  # Headless IB Gateway (TWS API)
+  # Documentation: https://github.com/gnzsnz/ib-gateway-docker
+  ib-gateway:
+    image: gnzsnz/ib-gateway:stable
+    ulimits:
+      nofile: 10000
+    environment:
+      - TWS_USERID=${TWS_USERID}
+      - TWS_PASSWORD=${TWS_PASSWORD}
+      - TWS_API_PORT=4002
+      - API_PORT=4002
+      - SOCAT_PORT=4004
+      - JAVA_HEAP_SIZE=${IB_GATEWAY_JAVA_HEAP_MB:-4096}
+      - TWS_EXTRA_ARGS=-XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:+AlwaysPreTouch -XX:+ExitOnOutOfMemoryError
+      - TRADING_MODE=${TRADING_MODE:-paper} # defaults to paper if not set
+      - VNC_SERVER_PASSWORD=${VNC_SERVER_PASSWORD:-secret}
+      - READ_ONLY_API=no
+      - TWS_ACCEPT_INCOMING=accept
+      - BYPASS_WARNING=yes
+      # Stability settings (from gnzsnz best practices)
+      - TWOFA_TIMEOUT_ACTION=restart
+      - SAVE_TWS_SETTINGS=yes
+      - EXISTING_SESSION_DETECTED_ACTION=secondary
+    ports:
+      - "${IB_GATEWAY_API_PORT:-4004}:4004"  # API port (via socat)
+      - "${IB_GATEWAY_VNC_PORT:-5901}:5900"  # VNC port (container listens on 5900)
+    volumes:
+      - ./jts.ini:/home/ibgateway/Jts/jts.ini
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/4004'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ibkr-net
+
+  # Our Bridge API
+  bridge-api:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+    environment:
+      - IB_HOST=${IB_HOST:-ib-gateway}
+      - IB_PORT=${IB_PORT:-4004}
+      - IB_CLIENT_ID=${IB_CLIENT_ID:-1}
+      - IB_TRADING_MODE=${TRADING_MODE:-paper}
+      - IBKR_BRIDGE_API_KEY=${IBKR_BRIDGE_API_KEY}
+      - BRIDGE_API_KEY=${BRIDGE_API_KEY}
+      - IB_CONNECT_TIMEOUT=${IB_CONNECT_TIMEOUT:-30}
+      - IB_HEALTH_CONNECT_TIMEOUT=${IB_HEALTH_CONNECT_TIMEOUT:-5}
+      - IB_HEALTH_CACHE_TTL=${IB_HEALTH_CACHE_TTL:-2}
+      - IB_HEALTH_LOCK_TIMEOUT=${IB_HEALTH_LOCK_TIMEOUT:-0.25}
+      - IB_EXECUTIONS_TIMEOUT=${IB_EXECUTIONS_TIMEOUT:-12}
+      - IB_EXECUTIONS_LOCK_TIMEOUT=${IB_EXECUTIONS_LOCK_TIMEOUT:-3}
+      - IB_EXECUTIONS_CACHE_TTL=${IB_EXECUTIONS_CACHE_TTL:-30}
+      - IB_EXECUTIONS_LOOKBACK_DAYS=${IB_EXECUTIONS_LOOKBACK_DAYS}
+      - IB_RECONNECT_INTERVAL=${IB_RECONNECT_INTERVAL:-10}
+      - IB_RECONNECT_BACKOFF_MAX=${IB_RECONNECT_BACKOFF_MAX:-60}
+      - IB_RECONNECT_LOCK_TIMEOUT=${IB_RECONNECT_LOCK_TIMEOUT:-0.5}
+      - IB_HEARTBEAT_INTERVAL=${IB_HEARTBEAT_INTERVAL:-30}
+      - IB_HEARTBEAT_TIMEOUT=${IB_HEARTBEAT_TIMEOUT:-20}
+      - IB_HEARTBEAT_FAILURES_BEFORE_EXIT=${IB_HEARTBEAT_FAILURES_BEFORE_EXIT:-3}
+      - IB_DATA_LOCK_TIMEOUT=${IB_DATA_LOCK_TIMEOUT:-5}
+      - IB_DATA_LOCK_RETRY_ATTEMPTS=${IB_DATA_LOCK_RETRY_ATTEMPTS:-3}
+      - IB_DATA_LOCK_RETRY_BACKOFF=${IB_DATA_LOCK_RETRY_BACKOFF:-0.2}
+      - IB_CONTRACT_QUALIFY_TIMEOUT=${IB_CONTRACT_QUALIFY_TIMEOUT:-5}
+      - IB_LOCK_WATCHDOG_SECONDS=${IB_LOCK_WATCHDOG_SECONDS:-5}
+      - IB_MARKET_DATA_CACHE_TTL=${IB_MARKET_DATA_CACHE_TTL:-2}
+      - IB_OPTION_CHAIN_CACHE_TTL=${IB_OPTION_CHAIN_CACHE_TTL:-300}
+      - IB_HISTORICAL_CACHE_TTL=${IB_HISTORICAL_CACHE_TTL:-300}
+      - BRIDGE_RATE_LIMIT_RPS=${BRIDGE_RATE_LIMIT_RPS:-0}
+      - BRIDGE_RATE_LIMIT_BURST=${BRIDGE_RATE_LIMIT_BURST:-0}
+      - IBKR_EXECUTION_WEBHOOK_URL=${IBKR_EXECUTION_WEBHOOK_URL}
+      - EXECUTION_WEBHOOK_URL=${EXECUTION_WEBHOOK_URL}
+    ports:
+      - "5050:5050"
+    depends_on:
+      - ib-gateway
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5050/ping').read()\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - ibkr-net
+
+  # HTTPS Proxy (Automatic SSL via Let's Encrypt)
+  caddy:
+    image: caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - bridge-api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost/health >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ibkr-net
+
+  # Browser-based VNC client (noVNC)
+  novnc:
+    image: cuteminded/novnc:latest
+    ports:
+      - "6080:6080"
+    environment:
+      VNCSERVER: ib-gateway
+      VNCPORT: 5900
+    depends_on:
+      - ib-gateway
+    restart: unless-stopped
+    networks:
+      - ibkr-net
+
+networks:
+  ibkr-net:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

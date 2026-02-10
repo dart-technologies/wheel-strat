@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /opportunities/{opportunity} {
+      allow read: if true;
+      allow write: if false; // Only allow writes from Cloud Functions (admin SDK)
+    }
+    match /user_trades/{tradeId} {
+      allow read: if true; // Public ledger for community activity
+      allow write: if false; // Only bridge/functions can write verified executions
+    }
+    match /deviceTokens/{tokenId} {
+      allow read: if false;
+      allow create, update: if request.resource.data.token == tokenId
+        && request.resource.data.tokenType in ['expo']
+        && request.resource.data.platform in ['ios', 'android', 'web']
+        && request.resource.data.keys().hasOnly(['token', 'tokenType', 'platform', 'createdAt', 'updatedAt']);
+      allow delete: if false;
+    }
+    match /reports/{reportId} {
+      allow read: if true;
+    }
+    match /alerts/{alertId} {
+      allow read: if true;
+    }
+    match /settings/{settingId} {
+      allow read: if true;
+    }
+    match /positionSnapshots/{symbol} {
+      allow read: if true;
+    }
+    match /user_positions/{positionId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if false; // Cloud Functions only
+    }
+    match /user_portfolio/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Cloud Functions only
+    }
+    match /community_positions/{positionId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /community_portfolio/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /market_calendar/{eventId} {
+      allow read: if true;
+    }
+    match /corporate_actions/{actionId} {
+      allow read: if true;
+    }
+    match /user_orders/{orderId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow write: if false;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,205 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GlassCard applies custom tint and intensity 1`] = `
+<View
+  glassEffectStyle="regular"
+  isInteractive={true}
+  style={
+    [
+      {
+        "backgroundColor": "rgba(255, 255, 255, 0.05)",
+        "borderColor": "rgba(255, 255, 255, 0.12)",
+        "borderRadius": 24,
+        "borderWidth": 1,
+        "overflow": "hidden",
+      },
+      null,
+      undefined,
+    ]
+  }
+  tintColor="rgba(255, 255, 255, 0.08)"
+>
+  <View
+    pointerEvents="none"
+    style={
+      [
+        {
+          "backgroundColor": "transparent",
+        },
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+      ]
+    }
+  >
+    <ViewManagerAdapter_ExpoBlurView
+      blurReductionFactor={4}
+      experimentalBlurMethod="none"
+      intensity={50}
+      style={
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+      tint="light"
+    />
+  </View>
+  <View
+    style={
+      [
+        {
+          "padding": 24,
+        },
+        undefined,
+      ]
+    }
+  >
+    <Text>
+      Test Content
+    </Text>
+  </View>
+</View>
+`;
+
+exports[`GlassCard renders correctly with default props 1`] = `
+<View
+  glassEffectStyle="regular"
+  isInteractive={true}
+  style={
+    [
+      {
+        "backgroundColor": "rgba(255, 255, 255, 0.05)",
+        "borderColor": "rgba(255, 255, 255, 0.12)",
+        "borderRadius": 24,
+        "borderWidth": 1,
+        "overflow": "hidden",
+      },
+      null,
+      undefined,
+    ]
+  }
+  tintColor="rgba(255, 255, 255, 0.08)"
+>
+  <View
+    pointerEvents="none"
+    style={
+      [
+        {
+          "backgroundColor": "transparent",
+        },
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+      ]
+    }
+  >
+    <ViewManagerAdapter_ExpoBlurView
+      blurReductionFactor={4}
+      experimentalBlurMethod="none"
+      intensity={30}
+      style={
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+      tint="dark"
+    />
+  </View>
+  <View
+    style={
+      [
+        {
+          "padding": 24,
+        },
+        undefined,
+      ]
+    }
+  >
+    <Text>
+      Test Content
+    </Text>
+  </View>
+</View>
+`;
+
+exports[`GlassCard renders correctly with native glass disabled 1`] = `
+<View
+  style={
+    [
+      {
+        "backgroundColor": "rgba(255, 255, 255, 0.05)",
+        "borderColor": "rgba(255, 255, 255, 0.12)",
+        "borderRadius": 24,
+        "borderWidth": 1,
+        "overflow": "hidden",
+      },
+      null,
+      undefined,
+    ]
+  }
+>
+  <View
+    pointerEvents="none"
+    style={
+      [
+        {
+          "backgroundColor": "transparent",
+        },
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        },
+      ]
+    }
+  >
+    <ViewManagerAdapter_ExpoBlurView
+      blurReductionFactor={4}
+      experimentalBlurMethod="none"
+      intensity={30}
+      style={
+        {
+          "bottom": 0,
+          "left": 0,
+          "position": "absolute",
+          "right": 0,
+          "top": 0,
+        }
+      }
+      tint="dark"
+    />
+  </View>
+  <View
+    style={
+      [
+        {
+          "padding": 24,
+        },
+        undefined,
+      ]
+    }
+  >
+    <Text>
+      Test Content
+    </Text>
+  </View>
+</View>
+`;

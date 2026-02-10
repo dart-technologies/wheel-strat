@@ -1,0 +1,42 @@
+# EAS ignore file
+# Includes files that are git-ignored but needed for local builds
+# Since EAS CLI uses .easignore instead of .gitignore when present,
+# we must explicitly exclude everything we don't want in the archive.
+
+# Keep these
+!GoogleService-Info.plist
+!.env.local
+
+# General exclusions
+node_modules/
+**/node_modules/
+ios/
+android/
+artifacts/
+coverage/
+.expo/
+.git/
+.firebase/
+.gcloud/
+.pytest_cache/
+.vscode/
+
+# Project-specific exclusions
+scripts/**/*.sh
+web-build/
+dist/
+docs/
+docs/archive/
+plan/
+
+# Temporary and log files
+*.log
+logs.txt
+bridge.log
+emulator.log
+*-debug.log
+build_output.txt
+*output*.txt
+mag7_simulation_results.json
+detox_*.txt
+.yarn/install-state.gz

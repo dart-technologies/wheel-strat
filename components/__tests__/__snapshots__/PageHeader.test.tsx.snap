@@ -1,0 +1,175 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PageHeader renders correctly with right element 1`] = `
+<View
+  style={
+    {
+      "marginBottom": 8,
+      "paddingBottom": 16,
+      "paddingHorizontal": 24,
+      "paddingTop": 24,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "gap": 8,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#E8EAED",
+            "fontFamily": "SF Pro Display",
+            "fontSize": 34,
+            "fontWeight": "800",
+            "letterSpacing": -0.3,
+          }
+        }
+        testID="page-title"
+      >
+        Test Title
+      </Text>
+    </View>
+    <View
+      style={
+        {
+          "alignSelf": "center",
+          "marginLeft": 16,
+        }
+      }
+    >
+      <View>
+        <Text>
+          Right
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`PageHeader renders correctly with title and subtitle 1`] = `
+<View
+  style={
+    {
+      "marginBottom": 8,
+      "paddingBottom": 16,
+      "paddingHorizontal": 24,
+      "paddingTop": 24,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "gap": 8,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#E8EAED",
+            "fontFamily": "SF Pro Display",
+            "fontSize": 34,
+            "fontWeight": "800",
+            "letterSpacing": -0.3,
+          }
+        }
+        testID="page-title"
+      >
+        Test Title
+      </Text>
+    </View>
+  </View>
+  <Text
+    style={
+      {
+        "color": "#B5BBC7",
+        "fontFamily": "SF Pro Text",
+        "fontSize": 12,
+        "fontWeight": "600",
+        "marginTop": 4,
+      }
+    }
+  >
+    Test Subtitle
+  </Text>
+</View>
+`;
+
+exports[`PageHeader renders correctly with title only 1`] = `
+<View
+  style={
+    {
+      "marginBottom": 8,
+      "paddingBottom": 16,
+      "paddingHorizontal": 24,
+      "paddingTop": 24,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "gap": 8,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#E8EAED",
+            "fontFamily": "SF Pro Display",
+            "fontSize": 34,
+            "fontWeight": "800",
+            "letterSpacing": -0.3,
+          }
+        }
+        testID="page-title"
+      >
+        Test Title
+      </Text>
+    </View>
+  </View>
+</View>
+`;

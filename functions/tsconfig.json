@@ -1,0 +1,37 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "outDir": "lib",
+        "sourceMap": true,
+        "strict": true,
+        "target": "es2017",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "baseUrl": ".",
+        "plugins": [
+            { "transform": "typescript-transform-paths" },
+            { "transform": "typescript-transform-paths", "afterDeclarations": true }
+        ],
+        "paths": {
+            "@/*": [
+                "src/*"
+            ],
+            "@wheel-strat/shared": [
+                "../packages/shared/src/index.ts"
+            ],
+            "@wheel-strat/shared/*": [
+                "../packages/shared/src/*"
+            ]
+        },
+        "rootDirs": [
+            "src",
+            "../packages/shared/src"
+        ]
+    },
+    "compileOnSave": true,
+    "include": [
+        "src"
+    ]
+}
