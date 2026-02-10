@@ -20,8 +20,9 @@ export async function fetchBridgePortfolioPayload({
     bridgeUrl,
     bridgeApiKey,
     context,
-    timeoutMs = 60000
-}: BridgeFetchOptions): Promise<BridgePortfolioPayload> {
+    timeoutMs = 60000,
+    account
+}: BridgeFetchOptions & { account?: string }): Promise<BridgePortfolioPayload> {
     const normalizedBridgeUrl = normalizeBridgeUrl(bridgeUrl);
     const headers = {
         "ngrok-skip-browser-warning": "1",
@@ -30,7 +31,8 @@ export async function fetchBridgePortfolioPayload({
     logger.info(`${context}: bridge fetch starting`, {
         bridgeUrl,
         normalizedBridgeUrl,
-        timeout: timeoutMs
+        timeout: timeoutMs,
+        account
     });
 
     const readResponseSnippet = async (response: { text: () => Promise<string> }) => {
@@ -72,23 +74,86 @@ export async function fetchBridgePortfolioPayload({
         throw lastError || new Error(`Failed to fetch ${path} after ${retryCount} retries`);
     };
 
-    const positionsResponse = await fetchWithRetry("/positions");
+    let positionsResponse = await fetchWithRetry("/portfolio");
     if (!positionsResponse.ok) {
-        throw new HttpsError("unavailable", `Bridge positions fetch failed: ${positionsResponse.status}`);
+        logger.warn(`${context}: bridge portfolio fetch failed, falling back to /positions`, {
+            status: positionsResponse.status
+        });
+        positionsResponse = await fetchWithRetry("/positions", 0);
+    }
+    if (!positionsResponse.ok) {
+        throw new HttpsError("unavailable", `Bridge positions fetch failed: ${positionsResponse.status} on ${normalizedBridgeUrl}`);
     }
 
     const summaryResponse = await fetchWithRetry("/account-summary");
     if (!summaryResponse.ok) {
-        throw new HttpsError("unavailable", `Bridge account summary fetch failed: ${summaryResponse.status}`);
+        throw new HttpsError("unavailable", `Bridge account summary fetch failed: ${summaryResponse.ok} on ${normalizedBridgeUrl}`);
     }
 
-    let positionsJson: unknown = null;
-    let summaryJson: unknown = null;
+    // Parse summary early to extract account ID for subsequent P&L calls
+    let summaryJson: any = null;
+    let accountId = account;
     try {
-        [positionsJson, summaryJson] = await Promise.all([
-            positionsResponse.json(),
-            summaryResponse.json()
-        ]);
+        summaryJson = await summaryResponse.json();
+        if (summaryJson && typeof summaryJson === 'object') {
+            accountId = accountId || (summaryJson.AccountCode as string);
+        }
+    } catch (error) {
+        logger.error(`${context}: bridge account summary JSON parse failed`, { error: (error as Error)?.message });
+        throw new HttpsError("internal", "Bridge account summary JSON parse failed");
+    }
+
+    // NEW: Fetch robust P&L data from /pnl endpoint using extracted account ID
+    let pnlResponse: any = null;
+    try {
+        const pnlPath = accountId ? `/pnl?account=${accountId}` : "/pnl";
+        pnlResponse = await fetchWithRetry(pnlPath, 0);
+    } catch (err) {
+        logger.warn(`${context}: bridge /pnl fetch failed - optional`, { error: (err as Error).message });
+    }
+
+    let positionsJson: any = null;
+    let pnlJson: any = null;
+    try {
+        const promises: Promise<any>[] = [
+            positionsResponse.json()
+        ];
+        if (pnlResponse?.ok) {
+            promises.push(pnlResponse.json());
+        }
+
+        const results = await Promise.all(promises);
+        positionsJson = results[0];
+        pnlJson = results[1] || null;
+
+        if (!pnlJson) {
+            logger.info(`${context}: /pnl returned null or failed, relying on account summary tags only`);
+        }
+
+        // Merge P&L data into summaryJson if available
+        if (summaryJson && pnlJson && typeof pnlJson === 'object') {
+            summaryJson = {
+                ...summaryJson,
+                DailyPnL: pnlJson.dailyPnL ?? summaryJson.DailyPnL,
+                RealizedPnL: pnlJson.realizedPnL ?? summaryJson.RealizedPnL,
+                UnrealizedPnL: pnlJson.unrealizedPnL ?? summaryJson.UnrealizedPnL,
+            };
+        }
+
+        // Diagnostic logging for account-summary tags
+        if (summaryJson && typeof summaryJson === 'object') {
+            const raw = summaryJson as Record<string, unknown>;
+            logger.info(`${context}: bridge account summary raw tags`, {
+                tags: Object.keys(raw),
+                values: {
+                    DailyPnL: raw.DailyPnL,
+                    RealizedPnL: raw.RealizedPnL,
+                    UnrealizedPnL: raw.UnrealizedPnL,
+                    TotalCashValue: raw.TotalCashValue,
+                    NetLiquidation: raw.NetLiquidation
+                }
+            });
+        }
     } catch (error) {
         const positionsSnippet = await readResponseSnippet(positionsResponse);
         const summarySnippet = await readResponseSnippet(summaryResponse);
@@ -125,4 +190,24 @@ export async function fetchBridgePortfolioPayload({
         positionsPayload: positionsPayload as { positions?: unknown[] },
         summaryPayload: (summaryPayload ?? null) as Record<string, unknown> | null
     };
+}
+
+export async function fetchPnLSingle(
+    bridgeUrl: string,
+    bridgeApiKey: string | undefined,
+    conId: number,
+    account: string = ""
+): Promise<any> {
+    const normalizedBridgeUrl = normalizeBridgeUrl(bridgeUrl);
+    const headers = { "ngrok-skip-browser-warning": "1" };
+    const url = `${normalizedBridgeUrl}/pnl-single?conId=${conId}&account=${account}`;
+
+    try {
+        const res = await fetchWithTimeout(url, { headers }, 10000, bridgeApiKey);
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (err) {
+        logger.warn(`fetchPnLSingle failed for conId ${conId}`, { error: (err as Error).message });
+        return null;
+    }
 }

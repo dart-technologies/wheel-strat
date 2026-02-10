@@ -213,6 +213,7 @@ orders_cache = {}
 positions_cache = {}
 account_summary_cache = {}
 contract_details_cache = {}
+pnl_cache = {}
 
 # Webhook queue
 execution_webhook_queue = queue.Queue()
@@ -930,7 +931,7 @@ def fetch_account_summary(timeout):
         res, err = wait_for_future(f, timeout)
         return res, err
     if hasattr(_ib, "reqAccountSummaryAsync"):
-        tags = "NetLiquidation,TotalCashValue,BuyingPower,AvailableFunds,ExcessLiquidity,DailyPnL"
+        tags = "NetLiquidation,TotalCashValue,BuyingPower,AvailableFunds,ExcessLiquidity,DailyPnL,RealizedPnL,UnrealizedPnL"
         f, err = submit_ib_call(_ib.reqAccountSummaryAsync, "All", tags, invoke_timeout=timeout)
         if err:
             return None, err
@@ -1579,20 +1580,116 @@ def get_account_summary():
         if summ is None:
             update_diag(lastAccountSummaryAt=now_iso(), lastAccountSummaryMs=duration_ms, lastAccountSummaryError="empty")
             return guard.error(500, "account-summary-empty")
-        allowed_tags = ('NetLiquidation', 'TotalCashValue', 'BuyingPower', 'AvailableFunds', 'ExcessLiquidity', 'DailyPnL')
-        payload = {
-            s.tag: float(s.value)
-            for s in summ
-            if s.currency == 'USD' and s.tag in allowed_tags
-        }
-        update_diag(
-            lastAccountSummaryAt=now_iso(),
-            lastAccountSummaryMs=duration_ms,
-            lastAccountSummaryCount=len(payload),
-            lastAccountSummaryError=None
+        allowed_tags = (
+            'NetLiquidation',
+            'TotalCashValue',
+            'BuyingPower',
+            'AvailableFunds',
+            'ExcessLiquidity',
+            'DailyPnL',
+            'RealizedPnL',
+            'UnrealizedPnL',
+            'AccountCode'
         )
+        base_currency_tags = ('NetLiquidation', 'DailyPnL', 'RealizedPnL', 'UnrealizedPnL')
+        payload = {}
+        for s in summ:
+            if s.tag not in allowed_tags:
+                continue
+            
+            # AccountCode is a string, handle separately
+            if s.tag == 'AccountCode':
+                payload[s.tag] = str(s.value)
+                continue
+
+            currency = (s.currency or '').strip().upper()
+            is_usd = currency == 'USD'
+            is_base = currency in ('', 'BASE')
+            if not (is_usd or (is_base and s.tag in base_currency_tags)):
+                continue
+            payload[s.tag] = safe_number(s.value)
+        
+        update_diag(lastAccountSummaryAt=now_iso(), lastAccountSummaryMs=duration_ms, lastAccountSummaryCount=len(payload))
         cache_write(account_summary_cache, "account-summary", payload)
         return guard.respond(payload, 200)
+
+@app.route('/pnl')
+def get_pnl():
+    with BridgeGuard("pnl", group="portfolio", timeout=5.0) as guard:
+        if not guard.ok:
+            return guard.response
+        acc = request.args.get('account') or ''
+        model = request.args.get('model') or ''
+        
+        cache_key = f"acc:{acc}:mod:{model}"
+        cached, age = cache_read(pnl_cache, cache_key, 5.0) # 5s TTL
+        if cached:
+            return guard.respond(cached, 200)
+
+        _ib = get_ib_instance()
+        pnl = _ib.reqPnL(acc, model)
+        
+        # Wait for update
+        start = time.time()
+        while time.time() - start < 3.0:
+            if pnl.dailyPnL is not None or pnl.unrealizedPnL is not None:
+                break
+            time.sleep(0.1)
+        
+        res = {
+            "dailyPnL": safe_value(pnl.dailyPnL),
+            "unrealizedPnL": safe_value(pnl.unrealizedPnL),
+            "realizedPnL": safe_value(pnl.realizedPnL),
+            "value": safe_value(pnl.value)
+        }
+        _ib.cancelPnL(acc, model)
+        cache_write(pnl_cache, cache_key, res)
+        return guard.respond(res, 200)
+
+@app.route('/pnl-single')
+def get_pnl_single():
+    with BridgeGuard("pnl-single", group="portfolio", timeout=5.0) as guard:
+        if not guard.ok:
+            return guard.response
+        acc = request.args.get('account') or ''
+        model = request.args.get('model') or ''
+        con_id = request.args.get('conId')
+        if not con_id:
+            return guard.error(400, "missing-conId")
+        
+        cache_key = f"acc:{acc}:mod:{model}:con:{con_id}"
+        cached, age = cache_read(pnl_cache, cache_key, 5.0) # 5s TTL
+        if cached:
+            return guard.respond(cached, 200)
+
+        _ib = get_ib_instance()
+        pnl = _ib.reqPnLSingle(acc, model, int(con_id))
+        
+        # Wait for update
+        start = time.time()
+        while time.time() - start < 3.0:
+            if pnl.dailyPnL is not None or pnl.unrealizedPnL is not None:
+                break
+            time.sleep(0.1)
+            
+        res = {
+            "dailyPnL": safe_value(pnl.dailyPnL),
+            "unrealizedPnL": safe_value(pnl.unrealizedPnL),
+            "realizedPnL": safe_value(pnl.realizedPnL),
+            "value": safe_value(pnl.value),
+            "marketValue": safe_value(pnl.marketValue)
+        }
+        _ib.cancelPnLSingle(acc, model, int(con_id))
+        cache_write(pnl_cache, cache_key, res)
+        return guard.respond(res, 200)
+
+@app.route('/diag/logs')
+def get_logs():
+    limit = int(request.args.get('limit', 100))
+    # This is a bit hacky but useful for remote debugging
+    # We'll just return the last N lines of the log file if we can find it
+    # For now, return diag state as a proxy
+    return diag()
 
 if __name__ == '__main__':
     threading.Thread(target=loop_driver, daemon=True).start()

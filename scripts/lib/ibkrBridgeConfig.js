@@ -1,4 +1,4 @@
-const DEFAULT_REMOTE_DOCKER_URL = 'https://innate-eudemonistically-sharita.ngrok-free.dev';
+const DEFAULT_REMOTE_DOCKER_URL = 'https://129-80-32-230.sslip.io';
 
 const getDefaultBridgeUrl = (env) => (
     env.EXPO_PUBLIC_IBKR_BRIDGE_DEFAULT_URL

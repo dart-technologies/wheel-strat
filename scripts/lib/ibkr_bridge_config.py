@@ -1,6 +1,6 @@
 import os
 
-DEFAULT_REMOTE_DOCKER_URL = "https://innate-eudemonistically-sharita.ngrok-free.dev"
+DEFAULT_REMOTE_DOCKER_URL = "https://129-80-32-230.sslip.io"
 
 
 def read_env(*names, default=None):

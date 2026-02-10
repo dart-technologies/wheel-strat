@@ -4,7 +4,7 @@ export type IbkrTradingMode = 'paper' | 'live';
 export type IbkrBridgeProfile = 'local_mac' | 'local_docker' | 'remote_docker';
 
 const DEFAULT_BRIDGE_PROFILE: IbkrBridgeProfile = 'remote_docker';
-const DEFAULT_REMOTE_DOCKER_URL = 'https://innate-eudemonistically-sharita.ngrok-free.dev';
+const DEFAULT_REMOTE_DOCKER_URL = 'https://129-80-32-230.sslip.io';
 
 function normalizeTradingMode(value?: string): IbkrTradingMode {
     return value === 'live' ? 'live' : 'paper';
