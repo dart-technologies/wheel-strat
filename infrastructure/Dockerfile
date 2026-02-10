@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Python dependencies
 # Explicitly listing contents of requirements.txt here to avoid copy if possible, 
 # but copying is safer for sync
-COPY scripts/requirements.txt .
+COPY scripts/bridge/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the bridge script

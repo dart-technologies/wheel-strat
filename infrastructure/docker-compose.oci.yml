@@ -1,0 +1,124 @@
+services:
+  # Database: local Postgres on OCI Block Storage
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-wheel_strat_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - ibkr-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-wheel_strat_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Headless IB Gateway (TWS API)
+  # Uses stable image with ARM64 support
+  ib-gateway:
+    image: gnzsnz/ib-gateway:stable
+    ulimits:
+      nofile: 10000
+    environment:
+      - TWS_USERID=${TWS_USERID}
+      - TWS_PASSWORD=${TWS_PASSWORD}
+      - TWS_API_PORT=4002
+      - API_PORT=4002
+      - SOCAT_PORT=4004
+      - JAVA_HEAP_SIZE=${IB_GATEWAY_JAVA_HEAP_MB:-4096}
+      - TWS_EXTRA_ARGS=-XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:+AlwaysPreTouch -XX:+ExitOnOutOfMemoryError
+      - TRADING_MODE=${TRADING_MODE:-paper}
+      - VNC_SERVER_PASSWORD=${VNC_SERVER_PASSWORD:-secret}
+      - READ_ONLY_API=no
+      - TWS_ACCEPT_INCOMING=accept
+      - BYPASS_WARNING=yes
+      - TWOFA_TIMEOUT_ACTION=restart
+      - SAVE_TWS_SETTINGS=yes
+      - EXISTING_SESSION_DETECTED_ACTION=secondary
+    ports:
+      - "${IB_GATEWAY_API_PORT:-4004}:4004"
+    volumes:
+      - ./jts.ini:/home/ibgateway/Jts/jts.ini
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/4004'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - ibkr-net
+
+  # Our Bridge API
+  bridge-api:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile
+    environment:
+      - IB_HOST=ib-gateway
+      - IB_PORT=4004
+      - IB_CLIENT_ID=${IB_CLIENT_ID:-1}
+      - IB_TRADING_MODE=${TRADING_MODE:-paper}
+      - IBKR_BRIDGE_API_KEY=${IBKR_BRIDGE_API_KEY}
+      - BRIDGE_API_KEY=${BRIDGE_API_KEY}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-wheel_strat_db}
+    ports:
+      - "5050:5050"
+    depends_on:
+      db:
+        condition: service_healthy
+      ib-gateway:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5050/ping').read()\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - ibkr-net
+
+  # HTTPS Proxy (Automatic SSL via Let's Encrypt)
+  caddy:
+    image: caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - CADDY_HOST=${CADDY_HOST}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - bridge-api
+    restart: unless-stopped
+    networks:
+      - ibkr-net
+
+  # Browser-based VNC client (noVNC)
+  novnc:
+    image: cuteminded/novnc:latest
+    ports:
+      - "6080:6080"
+    environment:
+      VNCSERVER: ib-gateway
+      VNCPORT: 5900
+    depends_on:
+      - ib-gateway
+    restart: unless-stopped
+    networks:
+      - ibkr-net
+
+networks:
+  ibkr-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

@@ -8,7 +8,7 @@ module.exports = ({ config }) => ({
     ...config,
     name: "Wheel Strat",
     slug: "wheel-strat",
-    version: "1.54.6",
+    version: "1.54.7",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "wheel-strat",
